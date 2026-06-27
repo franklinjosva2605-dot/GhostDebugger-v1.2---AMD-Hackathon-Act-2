@@ -1,0 +1,38 @@
+# GhostDebugger — docker-compose for local development & demo.
+#
+# Usage:
+#   cp .env.example .env   # then fill in FIREWORKS_API_KEY
+#   docker compose -f docker/docker-compose.yml up --build
+#
+# Optionally uncomment the `ollama` service below to run a fully local
+# fallback stack with no cloud dependency at all.
+
+services:
+  ghostdebugger:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8501:8501"
+    env_file:
+      - ../.env
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    restart: unless-stopped
+    # AMD GPU users: uncomment to enable ROCm acceleration for Ollama.
+    # devices:
+    #   - /dev/kfd
+    #   - /dev/dri
+
+volumes:
+  ollama_models:
